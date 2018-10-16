@@ -26,52 +26,61 @@ eigen_modes = 6; % for 128 dimensional points we choose 12 eigen modes to explai
 
 % Testing
 % initialize parameters
-for test_ind=25:32
-enforce = 1;
-n_iter = 300;
-
-%test_image_1 = double(reshape(greyimages(:, test_ind), 256, 256));
-test_image_1 = double(reshape(greyimages(:, test_ind), 256, 256)) .* double(reshape(binaryimages(:, test_ind), 256, 256));
-test_pdm = correctpdms(:, test_ind);
-
-
-pdm = mean_pdm./2; % Initialize with mean pdm
-[u, t, r] = get_normalized_pdm(test_pdm); % Initial transform and rotation parameters
-for it=1:n_iter
-    cor_pdm = reverse_normalize(pdm, t, r); % map to image space
-    [new_pdm, new_gain] = move_pdm(test_image_1, cor_pdm, enforce);
-    [new_pdm_normalized, t1, r] = get_normalized_pdm(new_pdm); % normalize new pdm
-    pdm = project_pdm_to_shapespace(new_pdm_normalized, mean_pdm, P, D); % project it to shape space
+for test_ind=32:32
     enforce = 0;
-    if it == 1
-        it1 = cor_pdm;
-    elseif it == floor(0.5*n_iter)
-        it25 = cor_pdm;
-    elseif it == n_iter
-        it100 = cor_pdm;
-    end
-end
-figure('visible', 'off');
-subplot(1,3,1)
-imagesc(reshape(greyimages(:, test_ind), 256, 256)), colormap('gray');
-hold on;
-plot(it1(1:2:dim), it1(2:2:dim), 'g-');
-xlabel('1 iterations');
-hold off;
-subplot(1,3,2)
-imagesc(reshape(greyimages(:, test_ind), 256, 256)), colormap('gray');
-hold on;
-plot(it25(1:2:dim), it25(2:2:dim), 'g-');
-xlabel(strcat(num2str(floor(0.5*n_iter)), ' iterations'));
-hold off;
-subplot(1,3,3)
-imagesc(reshape(greyimages(:, test_ind), 256, 256)), colormap('gray');
-hold on;
-plot(it100(1:2:dim), it100(2:2:dim), 'g-');
-xlabel(strcat(num2str(n_iter), ' iterations'));
-hold off;
-saveas(gcf, strcat('figure_', num2str(test_ind), '.jpg'));
+    n_iter = 500;
 
+    test_image_1 = double(reshape(greyimages(:, test_ind), 256, 256));
+    %test_image_1 = double(reshape(greyimages(:, test_ind), 256, 256)) .* double(reshape(binaryimages(:, test_ind), 256, 256));
+    test_pdm = correctpdms(:, test_ind);
+
+    t= train_mean;
+    r = train_moment;
+    pdm = mean_pdm; % Initialize with mean pdm
+    %[u, t, r] = get_normalized_pdm(test_pdm); % Initial transform and rotation parameters
+    for it=1:n_iter
+        cor_pdm = reverse_normalize(pdm, t, r); % map to image space
+        [new_pdm, new_gain] = move_pdm(test_image_1, cor_pdm, enforce);
+        [new_pdm_normalized, t, r] = get_normalized_pdm(new_pdm); % normalize new pdm
+        pdm = project_pdm_to_shapespace(new_pdm_normalized, mean_pdm, P, D); % project it to shape space
+        enforce = 0;
+        if it == 1
+            it1 = cor_pdm;
+        elseif it == floor(0.35*n_iter)
+            it35 = cor_pdm;
+        elseif it == floor(0.7*n_iter)
+            it70 = cor_pdm;
+        elseif it == n_iter
+            it100 = cor_pdm;
+        end
+    end
+    figure('visible', 'on');
+    subplot(2,2,1)
+    imagesc(reshape(greyimages(:, test_ind), 256, 256)), colormap('gray');
+    hold on;
+    plot(it1(1:2:dim), it1(2:2:dim), 'g-');
+    xlabel('1 iterations');
+    hold off;
+    subplot(2,2,2)
+    imagesc(reshape(greyimages(:, test_ind), 256, 256)), colormap('gray');
+    hold on;
+    plot(it35(1:2:dim), it35(2:2:dim), 'g-');
+    xlabel(strcat(num2str(floor(0.35*n_iter)), ' iterations'));
+    hold off;
+    subplot(2,2,3)
+    imagesc(reshape(greyimages(:, test_ind), 256, 256)), colormap('gray');
+    hold on;
+    plot(it70(1:2:dim), it70(2:2:dim), 'g-');
+    xlabel(strcat(num2str(floor(0.7*n_iter),) ' iterations'));
+    hold off;
+    hold on;
+    plot(it100(1:2:dim), it100(2:2:dim), 'g-');
+    xlabel(strcat(num2str(n_iter), ' iterations'));
+    hold off;
+    fileName = strcat('figure_', num2str(test_ind), '.jpg');
+    saveas(gcf, fileName);
+    fprintf('Created %s\n', fileName);
+end
 
 
 

@@ -41,7 +41,7 @@ function [newpdm, image_match] = move_pdm(grayimage, correctpdm, enforce)
         normal = find_normal(previous_point, point, future_point);
         g2Imatch = D * normal; % geometry to image match. We want to maximize this.
         
-        P = find_points_along_normal(point, normal, 1, 50, 256);
+        P = find_points_along_normal(point, normal, 1, 5, 256);
         
         for j = 1:length(P)
             p = P(j, :);
